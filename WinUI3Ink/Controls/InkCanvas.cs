@@ -5,13 +5,17 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using DirectN;
+using DirectN.Extensions;
 using DirectN.Extensions.Com;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using WicNet;
 using Windows.Foundation;
+using Windows.Graphics.Imaging;
 using Windows.UI;
 using Windows.UI.Input.Inking;
+using WinRT;
 
 namespace WinUI3Ink.Controls;
 
@@ -146,6 +150,35 @@ public sealed partial class InkCanvas : Control
         ArgumentNullException.ThrowIfNull(atts);
         return QueueInkPresenterWorkItem(presenter => presenter.UpdateDefaultDrawingAttributes(atts));
     }
+
+    public Task<SoftwareBitmap?> GetBitmap(uint width, uint height, Color? backgroundColor = null, bool highContrast = false) => QueueInkPresenterWorkItem(presenter =>
+    {
+        var strokes = (IWinRTObject)presenter.StrokeContainer.GetStrokes();
+        var ptr = strokes.NativeObject.ThisPtr;
+
+        using var renderer = ComObject.CoCreate<IInkD2DRenderer>(Constants.InkD2DRenderer)!;
+        using var bmp = new WicBitmapSource(width, height, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA);
+        using var dc = bmp.CreateDeviceContext();
+
+        dc.BeginDraw();
+
+        if (backgroundColor != null)
+        {
+            var color = backgroundColor.Value;
+            var d3dc = D3DCOLORVALUE.FromArgb(color.A, color.R, color.G, color.B);
+            dc.Clear(d3dc);
+        }
+
+        ComObject.WithComInstanceOfType<ID2D1DeviceContext>(dc, unk =>
+        {
+            renderer.Object.Draw(unk, ptr, highContrast).ThrowOnError();
+        });
+        dc.Flush();
+        dc.EndDraw();
+
+        var softwareBitmapPtr = (nint)bmp.ToSoftwareBitmap(false);
+        return SoftwareBitmap.FromAbi(softwareBitmapPtr);
+    });
 
     // all calls to InkPresenter must be marshaled through the QueueInkPresenterWorkItem to ensure they are executed on the correct thread and after the presenter is created
     public Task<bool> QueueInkPresenterWorkItem(Action<InkPresenter> action)

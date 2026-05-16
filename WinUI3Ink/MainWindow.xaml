@@ -29,6 +29,9 @@
             HorizontalAlignment="Center"
             Orientation="Horizontal"
             Spacing="12">
+            <Button Click="OnSaveLeft">
+                Save left as image...
+            </Button>
             <Button Click="OnClearLeft">
                 Clear left
             </Button>
@@ -37,6 +40,9 @@
             </Button>
             <Button Click="OnClearRight">
                 Clear right
+            </Button>
+            <Button Click="OnSaveRight">
+                Save right as image...
             </Button>
         </StackPanel>
 
