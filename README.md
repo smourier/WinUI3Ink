@@ -1,5 +1,5 @@
 # WinUI3Ink
-A sample implementation of an InkCanvas custom control in C# for WinUI3, as only one file [InkCanvas.cs](WinUI3Ink/Controls/InkCanvas.cs)
+A sample implementation of an InkCanvas custom control in C# for WinUI3, as only one file [InkCanvas.cs](WinUI3Ink/Controls/InkCanvas.cs) (and it's associated style in [Generic.xaml](WinUI3Ink/Themes/Generic.xaml)).
 
 It's inspired by the "real" InkCanvas code available here https://github.com/microsoft/microsoft-ui-xaml/blob/main/src/controls/dev/InkCanvas/InkCanvas.cpp but still in experimental channel.
 
